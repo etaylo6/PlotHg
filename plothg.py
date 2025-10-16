@@ -176,10 +176,15 @@ def plot_nodes(hg: Hypergraph, ax: Axes, inputs: dict, output: Node, ps: PlotSet
     """Adds the nodes to the axes as patches."""
     index = 0
     plotted_nodes = {}
+    node_labels = {}  # Dictionary to store text labels for nodes
 
     for input in inputs:
         center, index = get_next_center(ps, index)
         plotted_nodes[input] = ax.add_patch(plot_circle('node_input', ps, center))
+        # Add text label for input node
+        node_labels[input] = ax.text(center[0], center[1], str(index-1), 
+                                   ha='center', va='center', fontsize=8, 
+                                   color='black', weight='bold')
     
     unplotted = [label for label in hg.nodes if label not in inputs]
     unplotted.remove(get_node_label(output))
@@ -190,12 +195,23 @@ def plot_nodes(hg: Hypergraph, ax: Axes, inputs: dict, output: Node, ps: PlotSet
         curr_node = pop_close_node(curr_node, hg, unplotted)
         circle = plot_circle('node_default', ps, center)
         plotted_nodes[curr_node] = ax.add_patch(circle)
+        # Add text label for regular node
+        node_labels[curr_node] = ax.text(center[0], center[1], str(index-1), 
+                                       ha='center', va='center', fontsize=8, 
+                                       color='black', weight='bold')
 
     x_centers, y_centers = zip(*[circle.center for circle in plotted_nodes.values()])
     output_center = (max(x_centers) + ps.spacing['x_spacing'], 
                      sum(y_centers) / len(y_centers))
     output_circle = plot_circle('node_output', ps, output_center)
     plotted_nodes[get_node_label(output)] = ax.add_patch(output_circle)
+    # Add text label for output node
+    node_labels[get_node_label(output)] = ax.text(output_center[0], output_center[1], 
+                                                str(index), ha='center', va='center', 
+                                                fontsize=8, color='black', weight='bold')
+
+    # Store node labels in the plot settings for later use
+    ps.node_labels = node_labels
 
     return plotted_nodes
 
